@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ToDo App - Edit Task</title>
+
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet"
+    integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
+</head>
+
+<body>
+
+  <div class="container mt-5">
+    <h2>Edit Task</h2>
+
+    <form id="editTaskForm">
+      <input type="hidden" id="editTaskId">
+
+      <div class="mb-3">
+        <label for="editTaskTitle" class="form-label">Edit Task Title</label>
+        <input type="text" class="form-control" id="editTaskTitle" required>
+      </div>
+
+      <div class="mb-3">
+        <label for="editTaskDescription" class="form-label">Edit Task Description:</label>
+        <textarea class="form-control" id="editTaskDescription" rows="3"></textarea>
+      </div>
+
+      <button type="submit" class="btn btn-primary">Save Changes</button>
+
+    </form>
+  </div>
+
+  <!-- Add this script inside your HTML file -->
+  <script>
+    document.addEventListener('DOMContentLoaded', async () => {
+      const editTaskForm = document.getElementById('editTaskForm');
+      const taskId = getTaskIdFromUrl();
+
+      editTaskForm.addEventListener('submit', submitEditTaskForm);
+
+      async function fetchTaskDetails(taskId) {
+        try {
+          if (taskId === null) {
+            console.log('Task ID is null. Skipping fetch request.');
+            return null;
+          }
+
+          const response = await fetch(`/tasks/edit/${taskId}`);
+
+          if (!response.ok) {
+            throw new Error(`Failed to fetch task details. Status: ${response.status}`);
+          }
+
+          const taskDetails = await response.json();
+          console.log('Task details:', taskDetails);
+          return taskDetails;
+        } catch (error) {
+          console.error('Error fetching task details', error.message);
+          alert('Error fetching task details. Please try again.');
+        }
+      }
+
+      function populateEditForm(taskDetails) {
+        if (taskDetails === null) {
+          console.log('Task details is null. Cannot populate form.');
+          return;
+        }
+
+        document.getElementById('editTaskId').value = taskDetails._id;
+        document.getElementById('editTaskTitle').value = taskDetails.title;
+        document.getElementById('editTaskDescription').value = taskDetails.description;
+      }
+
+      async function submitEditTaskForm(event) {
+        event.preventDefault();
+
+        const editedTitle = document.getElementById('editTaskTitle').value;
+        const editedDescription = document.getElementById('editTaskDescription').value;
+
+        const taskId = getTaskIdFromUrl();
+
+        if (!taskId) {
+          console.error('Task ID is null. Cannot update task.');
+          return;
+        }
+
+        try {
+          const response = await fetch(`/tasks/edit/${taskId}`, {
+            method: 'PUT',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              title: editedTitle,
+              description: editedDescription,
+            }),
+          });
+
+          if (!response.ok) {
+            throw new Error(`Failed to update task. Status: ${response.status}`);
+          }
+
+          const updatedTask = await response.json();
+          console.log('Updated Task:', updatedTask);
+
+          alert('Task updated successfully!');
+          window.location.href = '/tasks';
+        } catch (error) {
+          console.error('Error updating task', error.message);
+          alert(`Error updating task. ${error.message}`);
+        }
+      }
+
+      const taskDetails = await fetchTaskDetails(taskId);
+      populateEditForm(taskDetails);
+    });
+
+    function getTaskIdFromUrl() {
+      const pathSegments = window.location.pathname.split('/');
+      const taskIdIndex = pathSegments.indexOf('edit') + 1; // Assuming 'edit' is in the path
+      const taskId = taskIdIndex < pathSegments.length ? pathSegments[taskIdIndex] : null;
+      return taskId;
+    }
+  </script>
+
+</body>
+
+</html>
