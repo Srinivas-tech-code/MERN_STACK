@@ -12,7 +12,7 @@ app.use(express.urlencoded({ extended: true }));
 
 
 // MongoDB connection setup (as per your db.js file)
-const mongoURL = 'mongodb://127.0.0.1:27017/todo_app';
+const mongoURL = 'mongodb+srv://srinivaschiyyedu7816:admin123@cluster0.dkjpt1q.mongodb.net/?retryWrites=true&w=majority';
 mongoose.connect(mongoURL, {
   useNewUrlParser: true,
   useUnifiedTopology: true,
@@ -22,7 +22,7 @@ db.on('error', console.error.bind(console, 'MongoDB connection error:'));
 db.once('open', () => {
   console.log('Connected to MongoDB');
 });
-require('./db');
+
 
 const User = mongoose.model('User', {
   username: String,
